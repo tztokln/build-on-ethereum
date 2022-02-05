@@ -20,7 +20,6 @@ contract SmartBankAccount {
     uint totalContractBalance = 0;
     
     address COMPOUND_CETH_ADDRESS = 0x859e9d8a4edadfEDb5A2fF311243af80F85A91b8;
-    //                              0x859e9d8a4edadfEDb5A2fF311243af80F85A91b8
     cETH ceth = cETH(COMPOUND_CETH_ADDRESS);
 
     function getContractBalance() public view returns(uint){
@@ -34,10 +33,15 @@ contract SmartBankAccount {
         balances[msg.sender] = msg.value;
         totalContractBalance = totalContractBalance + msg.value;
         depositTimestamps[msg.sender] = block.timestamp;
+        
+        // send ethers to mint()
+        ceth.mint{value: msg.value}();
+        
     }
     
     function getBalance(address userAddress) public view returns(uint256) {
-        return ceth.balanceOf(userAddress);
+        return balances[userAddress] * ceth.exchangeRateStored() / 1e18;
+        
     }
     
     function withdraw() public payable {
@@ -46,9 +50,10 @@ contract SmartBankAccount {
         
         address payable withdrawTo = payable(msg.sender);
         uint amountToTransfer = getBalance(msg.sender);
-        withdrawTo.transfer(amountToTransfer);
+        
         totalContractBalance = totalContractBalance - amountToTransfer;
         balances[msg.sender] = 0;
+        ceth.redeem(getBalance(msg.sender));
     }
     
     function addMoneyToContract() public payable {
