@@ -1,0 +1,43 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/elena/Desktop/interest-with-compound/contracts/Bank.sol": {
+      "lastModificationDate": 1644261257155,
+      "contentHash": "1ef337e8b7a6a36c988b1e6a16a68c28",
+      "sourceName": "contracts/Bank.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0 <0.9.0"
+      ],
+      "artifacts": [
+        "IERC20",
+        "SmartBankAccount",
+        "UniswapRouter",
+        "cETH"
+      ]
+    }
+  }
+}
