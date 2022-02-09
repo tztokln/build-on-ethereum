@@ -48,18 +48,34 @@ contract MyErc20 {
         address _from,
         address _to,
         uint256 _value
-    ) public returns (bool success) {}
+    ) public returns (bool success) {
+        if (balances[_from] < _value) {
+            return false;
+        }
+        if (allowances[_from][msg.sender] < _value) return false;
+
+        balances[_from] -= _value;
+        balances[_to] += _value;
+        allowances[_from][msg.sender] -= _value;
+        return true;
+    }
+
+    mapping(address => mapping(address => uint256)) allowances;
 
     function approve(address _spender, uint256 _value)
         public
         returns (bool success)
-    {}
+    {
+        allowances[msg.sender][_spender] = _value;
+    }
 
     function allowance(address _owner, address _spender)
         public
         view
         returns (uint256 remaining)
-    {}
+    {
+        return allowances[_owner][_spender];
+    }
 
     mapping(uint256 => bool) BlockMined;
     uint256 totalMinted = 1000000 * 1e8;
@@ -80,11 +96,11 @@ contract MyErc20 {
         return true;
     }
 
-    function getCurrentBlock() public view returns (uint) {
+    function getCurrentBlock() public view returns (uint256) {
         return block.number;
     }
 
-    function isMinted() public view returns (bool){
+    function isMinted() public view returns (bool) {
         return BlockMined[block.number];
     }
- }
+}
