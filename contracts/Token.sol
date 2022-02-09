@@ -79,4 +79,12 @@ contract MyErc20 {
         BlockMined[block.number] = true;
         return true;
     }
-}
+
+    function getCurrentBlock() public view returns (uint) {
+        return block.number;
+    }
+
+    function isMinted() public view returns (bool){
+        return BlockMined[block.number];
+    }
+ }
