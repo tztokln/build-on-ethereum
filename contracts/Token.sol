@@ -9,6 +9,10 @@ contract MyErc20 {
 
     mapping(address => uint256) balances;
 
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval (address indexed _owner, address indexed _to, uint256 _value);
+
+
     constructor() {
         deployer = msg.sender;
         balances[deployer] = 1000000 * 1e8;
@@ -41,6 +45,7 @@ contract MyErc20 {
         assert(balances[msg.sender] > _value);
         balances[msg.sender] = balances[msg.sender] - _value;
         balances[_to] = balances[_to] + _value;
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -67,6 +72,7 @@ contract MyErc20 {
         returns (bool success)
     {
         allowances[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _to, _value);
     }
 
     function allowance(address _owner, address _spender)
