@@ -1,7 +1,7 @@
 {
   "name": "ls",
   "version": "1.0.0",
-  "description": "",
+  "description": "https://openquest.xyz/quest/Learning-Solidity-by-extending-Loot",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,10 +17,12 @@
   },
   "homepage": "https://github.com/tztokln/interest-with-compound#readme",
   "devDependencies": {
-    "hardhat": "^2.8.3"
+    "hardhat": "^2.8.4"
   },
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.2",
+    "@uniswap/sdk": "^3.0.3",
     "ethers": "^5.5.4"
-  }
+  },
+  "keywords": []
 }
