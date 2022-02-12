@@ -1,26 +1,37 @@
 {
-  "name": "ls",
+
+  "name": "arbitrageQuest",
+
   "version": "1.0.0",
+
   "description": "",
-  "main": "index.js",
+
+  "main": "arbitrageQuest.js",
+
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+
+    "test": "echo \"Error no test specified\" && exit 1"
+
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tztokln/interest-with-compound.git"
-  },
+
+  "keywords": [],
+
   "author": "",
+
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/tztokln/interest-with-compound/issues"
-  },
-  "homepage": "https://github.com/tztokln/interest-with-compound#readme",
-  "devDependencies": {
-    "hardhat": "^2.8.3"
-  },
+
   "dependencies": {
-    "@nomiclabs/hardhat-waffle": "^2.0.2",
-    "ethers": "^5.5.4"
+
+    "@uniswap/sdk": "^3.0.3-beta.1",
+
+    "ethers": "^5.0.8"
+
+  },
+
+  "devDependencies": {
+
+    "hardhat": "^2.6.1"
+
   }
+
 }
