@@ -1,6 +1,6 @@
-const sushiswapABI =  require ('./ABIConstants.js');
-const IERC20_ABI =  require ('./ABIConstants.js');
-const uniswapABI = require ('./ABIConstants.js');
+const sushiswapABI =  require ('./ABIConstants.js').sushiswapABI;
+const IERC20_ABI =  require ('./ABIConstants.js').IERC20_ABI;
+const uniswapABI = require ('./ABIConstants.js').uniswapABI;
 const ethers = require( 'ethers' );
 const BigNumber = ethers.BigNumber;
 const {
@@ -67,15 +67,11 @@ function constructContract( smAddress, smABI, privateKey ) {
 }
 
 async function getTokenBalanceInBN(address, tokenContract) {
-    console.log("HERE", address)
-
     const balance = await tokenContract.balanceOf(address);
     return BigNumber.from(balance);
 }
 
 async function getTokenBalance(address, tokenContract) {
-    console.log("HERE1 ", await tokenContract.deployed().balanceOf)
-
     const balance = await tokenContract.balanceOf(address);
     const decimals = await tokenContract.decimals();
     return ethers.utils.formatUnits(balance, decimals);
@@ -83,11 +79,11 @@ async function getTokenBalance(address, tokenContract) {
 
 async function printAccountBalance(address, privateKey) {
     const balance = await provider.getBalance(address);
-    // const wethBalance = await getTokenBalance(address, wethContract);
+    const wethBalance = await getTokenBalance(address, wethContract);
     const daiBalance = await getTokenBalance(address, daiContract);
-    // const mkrBalance = await getTokenBalance(address, mkrContract);
-    // const batBalance = await getTokenBalance(address, batContract);
-    // console.log(`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
+    const mkrBalance = await getTokenBalance(address, mkrContract);
+    const batBalance = await getTokenBalance(address, batContract);
+    console.log(`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
 }
 
 async function constructTradeParameters( tokenA, tokenB, tokenAmount ) {
