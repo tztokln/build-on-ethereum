@@ -1,1 +1,1 @@
-https://openquest.xyz/quest/Learning-Solidity-by-extending-Loot
+Check all the branches for ex-x form: https://openquest.xyz/tracks/build-on-ethereum
