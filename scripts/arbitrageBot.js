@@ -1,6 +1,7 @@
-const sushiswapABI =  require ('./ABIConstants.js');
-const IERC20_ABI =  require ('./ABIConstants.js');
-const uniswapABI = require ('./ABIConstants.js');
+const sushiswapABI =  require ('./ABIConstants.js').sushiswapABI;
+const IERC20_ABI =  require ('./ABIConstants.js').IERC20_ABI;
+const uniswapABI = require ('./ABIConstants.js').uniswapABI;
+const Web3 = require('web3')
 const ethers = require( 'ethers' );
 const BigNumber = ethers.BigNumber;
 const {
@@ -14,7 +15,6 @@ const {
     Trade,
     TokenAmount,
 } = require( '@uniswap/sdk' );
-console.log("HERE", uniswapABI)
 const providerURL = 'http://localhost:8545'; 
 const provider = new ethers.providers.JsonRpcProvider( providerURL );
 const testAccountAddress = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266';
@@ -25,10 +25,11 @@ const MAX_UINT256 = ethers.constants.MaxUint256;
 const ZERO_BN = ethers.constants.Zero;
 
 const Tokens = {
-    WETH: WETH[ ChainId.MAINNET ],
+    WETH: WETH[ ChainId.MAINNET],
     DAI: new Token( ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18 , 'DAI'),
     BAT: new Token( ChainId.MAINNET, '0x2E642b8D59B45a1D8c5aEf716A84FF44ea665914', 18, 'BAT') ,
-    MKR : new Token ( ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR')
+    MKR : new Token( ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR'),
+    wethTest: new Token( ChainId.MAINNET, '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',18, 'WETH' )
 };
 
 const wethContract = constructContract(Tokens.WETH.address, IERC20_ABI, privateKey);
@@ -42,7 +43,7 @@ const uniswap = constructContract(   //v2 router
     privateKey,               
 );
 const sushiswap  = constructContract(
-    '0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F',
+    '0xd9e1ce17f2641f24ae83637ab66a2cca9c378b9f',
     sushiswapABI,
     privateKey,
 );
@@ -84,7 +85,7 @@ async function printAccountBalance(address, privateKey) {
     const daiBalance = await getTokenBalance(address, daiContract);
     const mkrBalance = await getTokenBalance(address, mkrContract);
     const batBalance = await getTokenBalance(address, batContract);
-    console.log(`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
+    console.log('\x1b[36m%s\x1b[0m',`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
 }
 
 async function constructTradeParameters( tokenA, tokenB, tokenAmount ) {
@@ -127,6 +128,7 @@ async function swapEthToToken(ethAmount, token, userAddress, dexContract) {
     await printAccountBalance(userAddress);
 }
 async function swap(tokenA, tokenB, userAddress, tokenAContract, dexContract) {
+    console.log("HERE Swap")
     const inputTokenAmount = await getTokenBalanceInBN(userAddress, tokenAContract);
     const {
         amountOutMin,
@@ -195,9 +197,11 @@ async function searchProfitableArbitrage(args) {
     const uniRates2 = await uniswap.getAmountsOut(tradeAmount, [ outputToken.address, inputToken.address]);
     console.log(`Uniswap Exchange Rate: ${ethers.utils.formatUnits(uniRates2[0], 18)} ${outputTokenSymbol} = ${ethers.utils.formatUnits(uniRates2[1], 18)} ${inputTokenSymbol}`);
 
+    // console.log("===> ", sushiswap.address, tradeAmount.toString(), [ inputToken.address, outputToken.address])
+    console.log(" => ", outputToken.symbol);
     const sushiRates1 = await sushiswap.getAmountsOut(tradeAmount, [ inputToken.address, outputToken.address]);
     console.log(`Sushiswap Exchange Rate: ${ethers.utils.formatUnits(sushiRates1[0], 18)} ${inputTokenSymbol} = ${ethers.utils.formatUnits(sushiRates1[1], 18)} ${outputTokenSymbol}`);
-    const sushirates2 = await sushiswap.getAmountsOut(tradeAmount, [ outputToken.address, inputToken.address]);
+    const sushiRates2 = await sushiswap.getAmountsOut(tradeAmount, [ outputToken.address, inputToken.address]);
     console.log(`Sushiswap Exchange Rate: ${ethers.utils.formatUnits(sushiRates2[0], 18)} ${outputTokenSymbol} = ${ethers.utils.formatUnits(sushiRates2[1], 18)} ${inputTokenSymbol}`);
     
     const sushiswapRates = {
@@ -211,6 +215,11 @@ async function searchProfitableArbitrage(args) {
     };
 
     // profit1 = profit if we buy input token on uniswap and sell it on sushiswap
+
+    const gasPrice = await provider.getGasPrice()
+
+    // https://docs.ethers.io/v5/api/providers/provider/#Provider-getGasPrice
+    // console.log("HERE ",  ethers.utils.formatUnits(gasPrice, "gwei") )
     const profit1 = tradeAmount * (uniswapRates.sell - sushiswapRates.buy - gasPrice * 0.003);
 
     // profit2 = profit if we buy input token on sushiswap and sell it on uniswap
@@ -220,14 +229,16 @@ async function searchProfitableArbitrage(args) {
     console.log(`Profit from Sushiswap<>Uniswap : ${profit2}`)
 
     if(profit1 > 0 && profit1 > profit2) {
+        console.log("HERE ", profit1, profit2 )
 
-        //Execute arb Uniswap <=> Sushiswap
+    //     //Execute arb Uniswap <=> Sushiswap
         console.log(`Arbitrage Found: Make ${profit1} : Sell ${inputTokenSymbol} on Uniswap at ${uniswapRates.sell} and Buy ${outputTokenSymbol} on Sushiswap at ${sushiswapRates.buy}`);
 
         await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, uniswap);
         await swap(outputToken, inputToken, testAccountAddress, outputTokenContract, sushiswap);
     } else if(profit2 > 0) {
         //Execute arb Sushiswap <=> Uniswap
+        console.log("HERE 1 ", profit1, profit2 )
         console.log(`Arbitrage Found: Make ${profit2} : Sell ${inputTokenSymbol} on Sushiswap at ${sushiswapRates.sell} and Buy ${outputTokenSymbol} on Uniswap at ${uniswapRates.buy}`);
     
         await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, sushiswap);
@@ -237,6 +248,7 @@ async function searchProfitableArbitrage(args) {
 
 let isMonitoringPrice = false
 let isInitialTxDone = false
+
 async function monitorPrice() {
   if(isMonitoringPrice) {
     return
@@ -259,9 +271,9 @@ async function monitorPrice() {
   try {
     await searchProfitableArbitrage({
       inputToken: Tokens.DAI,
-      outputToken: Tokens.MKR,
+      outputToken: Tokens.wethTest,
       inputTokenContract: daiContract, 
-      outputTokenContract: mkrContract
+      outputTokenContract: wethContract
     });
 
   } catch (error) {
