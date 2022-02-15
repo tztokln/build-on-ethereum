@@ -85,7 +85,7 @@ async function printAccountBalance(address, privateKey) {
     const daiBalance = await getTokenBalance(address, daiContract);
     const mkrBalance = await getTokenBalance(address, mkrContract);
     const batBalance = await getTokenBalance(address, batContract);
-    console.log(`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
+    console.log('\x1b[36m%s\x1b[0m',`Account balance: ${ethers.utils.formatUnits(balance,18)} ethers, ${wethBalance} weth, ${daiBalance} DAi, ${mkrBalance} MKR, ${batBalance} BAT`);
 }
 
 async function constructTradeParameters( tokenA, tokenB, tokenAmount ) {
@@ -128,6 +128,7 @@ async function swapEthToToken(ethAmount, token, userAddress, dexContract) {
     await printAccountBalance(userAddress);
 }
 async function swap(tokenA, tokenB, userAddress, tokenAContract, dexContract) {
+    console.log("HERE Swap")
     const inputTokenAmount = await getTokenBalanceInBN(userAddress, tokenAContract);
     const {
         amountOutMin,
@@ -218,7 +219,7 @@ async function searchProfitableArbitrage(args) {
     const gasPrice = await provider.getGasPrice()
 
     // https://docs.ethers.io/v5/api/providers/provider/#Provider-getGasPrice
-    console.log("HERE ",  ethers.utils.formatUnits(gasPrice, "gwei") )
+    // console.log("HERE ",  ethers.utils.formatUnits(gasPrice, "gwei") )
     const profit1 = tradeAmount * (uniswapRates.sell - sushiswapRates.buy - gasPrice * 0.003);
 
     // profit2 = profit if we buy input token on sushiswap and sell it on uniswap
@@ -227,20 +228,22 @@ async function searchProfitableArbitrage(args) {
     console.log(`Profit from Uniswap<>Sushiswap : ${profit1}`)
     console.log(`Profit from Sushiswap<>Uniswap : ${profit2}`)
 
-    // if(profit1 > 0 && profit1 > profit2) {
+    if(profit1 > 0 && profit1 > profit2) {
+        console.log("HERE ", profit1, profit2 )
 
     //     //Execute arb Uniswap <=> Sushiswap
-    //     console.log(`Arbitrage Found: Make ${profit1} : Sell ${inputTokenSymbol} on Uniswap at ${uniswapRates.sell} and Buy ${outputTokenSymbol} on Sushiswap at ${sushiswapRates.buy}`);
+        console.log(`Arbitrage Found: Make ${profit1} : Sell ${inputTokenSymbol} on Uniswap at ${uniswapRates.sell} and Buy ${outputTokenSymbol} on Sushiswap at ${sushiswapRates.buy}`);
 
-    //     await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, uniswap);
-    //     await swap(outputToken, inputToken, testAccountAddress, outputTokenContract, sushiswap);
-    // } else if(profit2 > 0) {
-    //     //Execute arb Sushiswap <=> Uniswap
-    //     console.log(`Arbitrage Found: Make ${profit2} : Sell ${inputTokenSymbol} on Sushiswap at ${sushiswapRates.sell} and Buy ${outputTokenSymbol} on Uniswap at ${uniswapRates.buy}`);
+        await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, uniswap);
+        await swap(outputToken, inputToken, testAccountAddress, outputTokenContract, sushiswap);
+    } else if(profit2 > 0) {
+        //Execute arb Sushiswap <=> Uniswap
+        console.log("HERE 1 ", profit1, profit2 )
+        console.log(`Arbitrage Found: Make ${profit2} : Sell ${inputTokenSymbol} on Sushiswap at ${sushiswapRates.sell} and Buy ${outputTokenSymbol} on Uniswap at ${uniswapRates.buy}`);
     
-    //     await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, sushiswap);
-    //     await swap(outputToken, inputToken, testAccountAddress, outputTokenContract, uniswap);
-    // }
+        await swap(inputToken, outputToken, testAccountAddress, inputTokenContract, sushiswap);
+        await swap(outputToken, inputToken, testAccountAddress, outputTokenContract, uniswap);
+    }
 }
 
 let isMonitoringPrice = false
